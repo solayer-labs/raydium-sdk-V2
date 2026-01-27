@@ -1,6 +1,6 @@
 {
   "name": "@solayer-labs/cpmm-sdk",
-  "version": "0.2.32-alpha",
+  "version": "0.1.2",
   "description": "CPMM SDK for Solayer - Build liquidity pools and swap applications on Solayer chain.",
   "license": "GPL-3.0",
   "main": "./lib/index.js",
@@ -11,7 +11,7 @@
     "./src"
   ],
   "repository": "https://github.com/solayer-labs/raydium-sdk-V2",
-  "publicConfig": {
+  "publishConfig": {
     "registry": "https://registry.npmjs.org/",
     "access": "public"
   },
