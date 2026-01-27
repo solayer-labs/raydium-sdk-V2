@@ -1,7 +1,7 @@
 import { PublicKey } from "@solana/web3.js";
 import BN from "bn.js";
 import Decimal from "decimal.js-light";
-import { ApiV3Token } from "../../../api/type";
+import { ApiV3Token } from "../type";
 import { BNDivCeil } from "../../../common";
 import { ConstantProductCurve } from "./constantProduct";
 import { CpmmFee as Fee } from "./fee";

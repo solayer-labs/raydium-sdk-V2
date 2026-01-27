@@ -12,14 +12,12 @@ import {
   CREATE_CPMM_POOL_AUTH,
   InstructionType,
 } from "@/common";
-import { getCpmmPdaPoolId, getCpLockPda } from "./pda";
+import { getCpmmPdaPoolId, getCpLockPda, getPdaMetadataKey } from "./pda";
 
 import { struct, u8, u64, bool } from "@/marshmallow";
 import { ReturnTypeMakeInstructions } from "@/raydium/type";
-import { ApiV3PoolInfoStandardItemCpmm, CpmmKeys } from "@/api";
+import { ApiV3PoolInfoStandardItemCpmm, CpmmKeys, CpmmLockExtInfo, FeeOn } from "./type";
 import { getATAAddress } from "@/common";
-import { getPdaMetadataKey } from "../clmm";
-import { CpmmLockExtInfo, FeeOn } from "./type";
 
 const logger = createLogger("Raydium_cpmm");
 const anchorDataBuf = {

@@ -1,9 +1,9 @@
 {
-  "extends": "@tsconfig/node14/tsconfig.json",
-
   "compilerOptions": {
-    "target": "es6",
-    "lib": ["es2019", "DOM"],
+    "target": "ES2020",
+    "module": "CommonJS",
+    "moduleResolution": "node",
+    "lib": ["ES2020", "DOM"],
     "outDir": "./lib",
     "allowJs": true,
     "checkJs": true,
@@ -12,15 +12,21 @@
     "noImplicitAny": false,
     "esModuleInterop": true,
     "sourceMap": true,
-    "jsx": "react",
+    "strict": false,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"]
     }
   },
-  "include": ["./src/**/*"],
-  "exclude": ["node_modules"],
+  "include": ["./src/**/*", "./test/**/*"],
+  "exclude": ["node_modules", "lib"],
   "ts-node": {
-    "files": true
+    "files": true,
+    "compilerOptions": {
+      "module": "CommonJS"
+    }
   }
 }

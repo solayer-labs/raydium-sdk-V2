@@ -5,7 +5,7 @@ import { Token, TokenAmount } from "../../module";
 import { SOL_INFO, TOKEN_WSOL } from "./constant";
 import { TokenInfo } from "./type";
 
-import { ApiV3Token } from "../../api";
+import { TokenInfo as ApiV3Token } from "./type";
 import { solToWSol } from "@/common";
 
 export const parseTokenInfo = async ({
@@ -17,7 +17,7 @@ export const parseTokenInfo = async ({
 }): Promise<RawMint | undefined> => {
   const accountData = await connection.getAccountInfo(new PublicKey(mint));
   if (!accountData || accountData.data.length !== MintLayout.span) return;
-  const tokenInfo = MintLayout.decode(accountData.data);
+  const tokenInfo = MintLayout.decode(new Uint8Array(accountData.data));
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   //@ts-ignore
   return tokenInfo;
@@ -95,12 +95,14 @@ export const toApiV3Token = ({
   address,
   programId,
   decimals,
+  priority = 0,
   ...props
 }: {
   address: string;
   programId: string;
   decimals: number;
-} & Partial<ApiV3Token>): ApiV3Token => ({
+  priority?: number;
+} & Partial<TokenInfo>): TokenInfo => ({
   chainId: 101,
   address: solToWSol(address).toBase58(),
   programId,
@@ -110,6 +112,7 @@ export const toApiV3Token = ({
   decimals,
   tags: [],
   extensions: props.extensions || {},
+  priority,
   ...props,
 });
 

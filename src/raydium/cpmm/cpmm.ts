@@ -1,5 +1,5 @@
 import { PublicKey } from "@solana/web3.js";
-import { ApiV3PoolInfoStandardItemCpmm, CpmmKeys } from "../../api/type";
+import { ApiV3PoolInfoStandardItemCpmm, CpmmKeys } from "./type";
 import {
   AccountLayout,
   NATIVE_MINT,
@@ -23,6 +23,7 @@ import {
   getTransferAmountFeeV2,
   LOCK_CPMM_AUTH,
   LOCK_CPMM_PROGRAM,
+  getProgramIdConfig,
 } from "@/common";
 import { GetTransferAmountFee, ReturnTypeFetchMultipleMintInfos } from "../../raydium/type";
 import ModuleBase, { ModuleBaseProps } from "../moduleBase";
@@ -65,12 +66,49 @@ export default class CpmmModule extends ModuleBase {
     super(params);
   }
 
+  /**
+   * Get the CPMM program ID for the current cluster
+   */
+  public get cpmmProgramId(): PublicKey {
+    return getProgramIdConfig(this.scope.cluster).CREATE_CPMM_POOL_PROGRAM;
+  }
+
+  /**
+   * Get the CPMM pool auth for the current cluster
+   */
+  public get cpmmPoolAuth(): PublicKey {
+    return getProgramIdConfig(this.scope.cluster).CREATE_CPMM_POOL_AUTH;
+  }
+
+  /**
+   * Get the CPMM pool fee account for the current cluster
+   */
+  public get cpmmPoolFeeAccount(): PublicKey {
+    return getProgramIdConfig(this.scope.cluster).CREATE_CPMM_POOL_FEE_ACC;
+  }
+
+  /**
+   * Get the Lock CPMM program ID for the current cluster
+   */
+  public get lockCpmmProgramId(): PublicKey {
+    return getProgramIdConfig(this.scope.cluster).LOCK_CPMM_PROGRAM;
+  }
+
+  /**
+   * Get the Lock CPMM auth for the current cluster
+   */
+  public get lockCpmmAuth(): PublicKey {
+    return getProgramIdConfig(this.scope.cluster).LOCK_CPMM_AUTH;
+  }
+
   public async load(): Promise<void> {
     this.checkDisabled();
   }
 
   public async getCpmmPoolKeys(poolId: string): Promise<CpmmKeys> {
-    return ((await this.scope.api.fetchPoolKeysById({ idList: [poolId] })) as CpmmKeys[])[0];
+    // Use RPC to get pool keys
+    const { poolKeys } = await this.getPoolInfoFromRpc(poolId);
+    return poolKeys;
   }
 
   public async getRpcPoolInfo(poolId: string, fetchConfigInfo?: boolean): Promise<CpmmParsedRpcData> {
@@ -132,7 +170,7 @@ export default class CpmmModule extends ModuleBase {
       const vaultItemInfo = vaultAccountInfo[i].accountInfo;
       if (vaultItemInfo === null) throw Error("fetch vault info error: " + needFetchVaults[i]);
 
-      vaultInfo[String(needFetchVaults[i])] = new BN(AccountLayout.decode(vaultItemInfo.data).amount.toString());
+      vaultInfo[String(needFetchVaults[i])] = new BN(AccountLayout.decode(new Uint8Array(vaultItemInfo.data)).amount.toString());
     }
 
     const returnData: { [poolId: string]: CpmmParsedRpcData } = {};
@@ -238,6 +276,7 @@ export default class CpmmModule extends ModuleBase {
       address: rpcData.mintLp.toBase58(),
       decimals: rpcData.lpDecimals,
       programId: TOKEN_PROGRAM_ID.toBase58(),
+      extensions: {},
     });
 
     const configInfo = {
@@ -435,9 +474,6 @@ export default class CpmmModule extends ModuleBase {
       feePayer,
     } = params;
 
-    if (this.scope.availability.addStandardPosition === false)
-      this.logAndCreateError("add liquidity feature disabled in your region");
-
     if (inputAmount.isZero())
       this.logAndCreateError("amounts must greater than zero", "amountInA", {
         amountInA: inputAmount.toString(),
@@ -578,9 +614,6 @@ export default class CpmmModule extends ModuleBase {
       feePayer,
       closeWsol = true,
     } = params;
-
-    if (this.scope.availability.addStandardPosition === false)
-      this.logAndCreateError("add liquidity feature disabled in your region");
 
     const _slippage = new Percent(new BN(1)).sub(slippage);
 
@@ -837,8 +870,8 @@ export default class CpmmModule extends ModuleBase {
         feePayer: params.feePayer ?? this.scope.ownerPubKey,
       },
       feeNftOwner: feeNftOwner ?? this.scope.ownerPubKey,
-      lockProgram: params.programId ?? LOCK_CPMM_PROGRAM,
-      lockAuthProgram: params.authProgram ?? LOCK_CPMM_AUTH,
+      lockProgram: params.programId ?? this.lockCpmmProgramId,
+      lockAuthProgram: params.authProgram ?? this.lockCpmmAuth,
       lpAmount,
       withMetadata: params.withMetadata ?? true,
       getEphemeralSigners: params.getEphemeralSigners,
@@ -855,8 +888,8 @@ export default class CpmmModule extends ModuleBase {
       poolInfo,
       lpFeeAmount,
       nftMint,
-      programId = LOCK_CPMM_PROGRAM,
-      authProgram = LOCK_CPMM_AUTH,
+      programId = this.lockCpmmProgramId,
+      authProgram = this.lockCpmmAuth,
       cpmmProgram,
       computeBudgetConfig,
       txTipConfig,
@@ -968,8 +1001,8 @@ export default class CpmmModule extends ModuleBase {
   ): Promise<MakeMultiTxData<T>> {
     const {
       lockInfo,
-      programId = LOCK_CPMM_PROGRAM,
-      authProgram = LOCK_CPMM_AUTH,
+      programId = this.lockCpmmProgramId,
+      authProgram = this.lockCpmmAuth,
       cpmmProgram,
       computeBudgetConfig,
       txVersion,
@@ -1240,7 +1273,7 @@ export default class CpmmModule extends ModuleBase {
   public async collectCreatorFees<T extends TxVersion>({
     poolInfo,
     poolKeys: propPoolKeys,
-    programId = CREATE_CPMM_POOL_PROGRAM,
+    programId = this.cpmmProgramId,
     txVersion,
     computeBudgetConfig,
     txTipConfig,
@@ -1309,7 +1342,7 @@ export default class CpmmModule extends ModuleBase {
 
   public async collectMultiCreatorFees<T extends TxVersion>({
     poolInfoList,
-    programId = CREATE_CPMM_POOL_PROGRAM,
+    programId = this.cpmmProgramId,
     txVersion,
     computeBudgetConfig,
     feePayer,
@@ -1319,11 +1352,8 @@ export default class CpmmModule extends ModuleBase {
 
     const tokenAccRecord: Record<string, PublicKey> = {};
 
-    const poolKeyList = await this.scope.api.fetchPoolKeysById({ idList: poolInfoList.map((p) => p.id) });
-
     for (const poolInfo of poolInfoList) {
-      const poolKeys = (poolKeyList.find((p) => p.id === poolInfo.id) ||
-        (await this.getCpmmPoolKeys(poolInfo.id))) as CpmmKeys;
+      const poolKeys = await this.getCpmmPoolKeys(poolInfo.id);
       const [mintA, mintB, mintAProgram, mintBProgram] = [
         new PublicKey(poolInfo.mintA.address),
         new PublicKey(poolInfo.mintB.address),

@@ -1,12 +1,119 @@
 import { EpochInfo, PublicKey } from "@solana/web3.js";
 import BN from "bn.js";
 import Decimal from "decimal.js";
-import { ApiCpmmConfigInfo, ApiV3PoolInfoStandardItemCpmm, ApiV3Token, CpmmKeys } from "../../api/type";
 import { TxVersion } from "../../common/txTool/txType";
 import { Percent } from "../../module";
 import { ComputeBudgetConfig, GetTransferAmountFee, TxTipConfig } from "../../raydium/type";
 import { SwapResult } from "./curve/calculator";
 import { CpmmConfigInfoLayout, CpmmPoolInfoLayout } from "./layout";
+import { TokenInfo, ExtensionsItem, TransferFeeDataBaseType } from "../token/type";
+
+// Re-export token types for compatibility
+export type { TransferFeeDataBaseType, ExtensionsItem };
+
+// ApiV3Token is an alias for TokenInfo (without priority/userAdded/type fields)
+export type ApiV3Token = Omit<TokenInfo, "priority" | "userAdded" | "type">;
+
+/* ================= Pool Info Types ================= */
+
+export interface ApiV3PoolInfoCountItem {
+  volume: number;
+  volumeQuote: number;
+  volumeFee: number;
+  apr: number;
+  feeApr: number;
+  priceMin: number;
+  priceMax: number;
+  rewardApr: number[];
+}
+
+type PoolTypeItem = "StablePool" | "OpenBookMarket";
+
+type FarmRewardInfoOld = {
+  mint: ApiV3Token;
+  perSecond: number;
+};
+
+export type PoolFarmRewardInfo = FarmRewardInfoOld & {
+  startTime?: number;
+  endTime?: number;
+};
+
+export interface ApiV3PoolInfoBaseItem {
+  programId: string;
+  id: string;
+  mintA: ApiV3Token;
+  mintB: ApiV3Token;
+  rewardDefaultInfos: PoolFarmRewardInfo[];
+  rewardDefaultPoolInfos: "Ecosystem" | "Fusion" | "Raydium" | "Clmm";
+  price: number;
+  mintAmountA: number;
+  mintAmountB: number;
+  feeRate: number;
+  openTime: string;
+  tvl: number;
+
+  day: ApiV3PoolInfoCountItem;
+  week: ApiV3PoolInfoCountItem;
+  month: ApiV3PoolInfoCountItem;
+  pooltype: PoolTypeItem[];
+
+  farmUpcomingCount: number;
+  farmOngoingCount: number;
+  farmFinishedCount: number;
+
+  burnPercent: number;
+}
+
+/* ================= CPMM Config Types ================= */
+
+export interface ApiCpmmConfigInfo {
+  id: string;
+  index: number;
+  protocolFeeRate: number;
+  tradeFeeRate: number;
+  fundFeeRate: number;
+  createPoolFee: string;
+  creatorFeeRate: number;
+}
+
+interface ApiCpmmConfigV3 {
+  id: string;
+  index: number;
+  protocolFeeRate: number;
+  tradeFeeRate: number;
+  fundFeeRate: number;
+  createPoolFee: string;
+}
+
+export type ApiV3PoolInfoStandardItemCpmm = ApiV3PoolInfoBaseItem & {
+  type: "Standard";
+  lpMint: ApiV3Token;
+  lpPrice: number;
+  lpAmount: number;
+  config: ApiCpmmConfigV3;
+};
+
+/* ================= Pool Keys Types ================= */
+
+interface PoolKeysBase {
+  programId: string;
+  id: string;
+  mintA: ApiV3Token;
+  mintB: ApiV3Token;
+  lookupTableAccount?: string;
+  openTime: string;
+  vault: { A: string; B: string };
+}
+
+export type CpmmKeys = PoolKeysBase & {
+  authority: string;
+  mintLp: ApiV3Token;
+  config: ApiCpmmConfigV3;
+  observationId: string;
+};
+
+/* ================= CPMM Pool Types ================= */
 
 export interface CreateCpmmPoolParam<T> {
   poolId?: PublicKey;
@@ -24,7 +131,7 @@ export interface CreateCpmmPoolParam<T> {
 
   ownerInfo: {
     feePayer?: PublicKey;
-    useSOLBalance?: boolean; // if has WSOL mint
+    useSOLBalance?: boolean;
   };
   computeBudgetConfig?: ComputeBudgetConfig;
   txVersion?: T;
@@ -48,7 +155,7 @@ export interface CreateCpmmPoolPermissionParam<T> {
 
   ownerInfo: {
     feePayer?: PublicKey;
-    useSOLBalance?: boolean; // if has WSOL mint
+    useSOLBalance?: boolean;
   };
   computeBudgetConfig?: ComputeBudgetConfig;
   txVersion?: T;

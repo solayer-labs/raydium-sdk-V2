@@ -81,7 +81,8 @@ export function forecastTransactionSize(instructions: TransactionInstruction[], 
   transaction.add(...instructions);
 
   try {
-    return Buffer.from(transaction.serialize({ verifySignatures: false })).toString("base64").length < MAX_BASE64_SIZE;
+    const serialized = transaction.serialize({ verifySignatures: false });
+    return Buffer.from(serialized.buffer, serialized.byteOffset, serialized.byteLength).toString("base64").length < MAX_BASE64_SIZE;
   } catch (error) {
     return false;
   }

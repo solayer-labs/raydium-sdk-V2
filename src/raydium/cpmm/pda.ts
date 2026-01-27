@@ -1,5 +1,6 @@
 import { PublicKey } from "@solana/web3.js";
 import { findProgramAddress } from "../../common/txTool/txUtils";
+import { METADATA_PROGRAM_ID } from "@/common";
 
 const AUTH_SEED = Buffer.from("vault_and_lp_mint_auth_seed", "utf8");
 const AMM_CONFIG_SEED = Buffer.from("amm_config", "utf8");
@@ -136,4 +137,14 @@ export function getPdaPermissionId(
   nonce: number;
 } {
   return findProgramAddress([PERMISSION_SEED, owner.toBuffer()], programId);
+}
+
+export function getPdaMetadataKey(mint: PublicKey): {
+  publicKey: PublicKey;
+  nonce: number;
+} {
+  return findProgramAddress(
+    [Buffer.from("metadata"), METADATA_PROGRAM_ID.toBuffer(), mint.toBuffer()],
+    METADATA_PROGRAM_ID,
+  );
 }

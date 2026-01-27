@@ -26,7 +26,7 @@ export async function getMultipleLookupTableInfo({
     if (!info) continue;
     const lookupAccount = new AddressLookupTableAccount({
       key,
-      state: AddressLookupTableAccount.deserialize(info.data),
+      state: AddressLookupTableAccount.deserialize(new Uint8Array(info.data)),
     });
     outDict[key.toString()] = lookupAccount;
 
@@ -58,7 +58,7 @@ export const getMainLookupTableCache = async (connection: Connection) => {
   if (!data) return LOOKUP_TABLE_CACHE;
   LOOKUP_TABLE_CACHE[altStr] = new AddressLookupTableAccount({
     key: devAlt,
-    state: AddressLookupTableAccount.deserialize(data.data),
+    state: AddressLookupTableAccount.deserialize(new Uint8Array(data.data)),
   });
 
   return LOOKUP_TABLE_CACHE;
@@ -74,7 +74,7 @@ export const getDevLookupTableCache = async (connection: Connection) => {
   if (!data) return DEV_LOOKUP_TABLE_CACHE;
   DEV_LOOKUP_TABLE_CACHE[devAltStr] = new AddressLookupTableAccount({
     key: devAlt,
-    state: AddressLookupTableAccount.deserialize(data.data),
+    state: AddressLookupTableAccount.deserialize(new Uint8Array(data.data)),
   });
 
   return DEV_LOOKUP_TABLE_CACHE;

@@ -39,7 +39,6 @@ export default class ModuleBase {
       owner: this.scope.owner,
       blockhashCommitment: this.scope.blockhashCommitment,
       loopMultiTxStatus: this.scope.loopMultiTxStatus,
-      api: this.scope.api,
       signAllTransactions: this.scope.signAllTransactions,
     });
   }

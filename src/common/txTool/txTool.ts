@@ -13,7 +13,6 @@ import {
 } from "@solana/web3.js";
 import axios from "axios";
 
-import { Api } from "../../api";
 import { ComputeBudgetConfig, SignAllTransactions, TxTipConfig } from "../../raydium/type";
 import { Cluster } from "../../solana";
 import { Owner } from "../owner";
@@ -58,7 +57,6 @@ interface TxBuilderInit {
   owner?: Owner;
   blockhashCommitment?: Commitment;
   loopMultiTxStatus?: boolean;
-  api?: Api;
   signAllTransactions?: SignAllTransactions;
 }
 

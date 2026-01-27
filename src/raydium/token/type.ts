@@ -1,7 +1,43 @@
-import { ApiV3Token } from "../../api/type";
 import { Token, TokenProps } from "../../module/token";
 
-export type TokenInfo = ApiV3Token & {
+export type TransferFeeDataBaseType = {
+  transferFeeConfigAuthority: string;
+  withdrawWithheldAuthority: string;
+  withheldAmount: string;
+  olderTransferFee: {
+    epoch: string;
+    maximumFee: string;
+    transferFeeBasisPoints: number;
+  };
+  newerTransferFee: {
+    epoch: string;
+    maximumFee: string;
+    transferFeeBasisPoints: number;
+  };
+};
+
+export type ExtensionsItem = {
+  coingeckoId?: string;
+  feeConfig?: TransferFeeDataBaseType;
+  tips?: {
+    icon: string;
+    link: string;
+    text: string;
+  };
+};
+
+export type TokenInfo = {
+  chainId: number;
+  address: string;
+  programId: string;
+  logoURI: string;
+  symbol: string;
+  name: string;
+  decimals: number;
+  tags: string[];
+  extensions: ExtensionsItem;
+  freezeAuthority?: string;
+  mintAuthority?: string;
   priority: number;
   userAdded?: boolean;
   type?: string;
@@ -25,7 +61,7 @@ export type SplToken = TokenProps & {
   extensions: {
     [key in "coingeckoId" | "website" | "whitepaper"]?: string;
   };
-  userAdded?: boolean; // only if token is added by user
+  userAdded?: boolean;
 };
 
 export type LpToken = Token & {
@@ -33,7 +69,6 @@ export type LpToken = Token & {
   base: SplToken;
   quote: SplToken;
   icon: string;
-  /** mint. for `<TokenSelector>`*/
   id: string;
   extensions: {
     [key in "coingeckoId" | "website" | "whitepaper"]?: string;
