@@ -22,18 +22,24 @@ export function parseTokenAccountResp({ owner, solAccountResp, tokenAccountResp 
   const tokenAccountRawInfos: TokenAccountRaw[] = [];
 
   for (const { pubkey, account } of tokenAccountResp.value) {
-    const accountInfo = splAccountLayout.decode(account.data);
-    const { mint, amount } = accountInfo;
-    tokenAccounts.push({
-      publicKey: pubkey,
-      mint,
-      amount,
-      isAssociated: getATAAddress(owner, mint, account.owner).publicKey.equals(pubkey),
-      isNative: false,
-      programId: account.owner,
-    });
-    // todo programId should get from api
-    tokenAccountRawInfos.push({ pubkey, accountInfo, programId: account.owner });
+    try {
+      if (!account.data || account.data.length === 0) continue;
+      const accountInfo = splAccountLayout.decode(account.data);
+      const { mint, amount } = accountInfo;
+      tokenAccounts.push({
+        publicKey: pubkey,
+        mint,
+        amount,
+        isAssociated: getATAAddress(owner, mint, account.owner).publicKey.equals(pubkey),
+        isNative: false,
+        programId: account.owner,
+      });
+      // todo programId should get from api
+      tokenAccountRawInfos.push({ pubkey, accountInfo, programId: account.owner });
+    } catch (error) {
+      logger.logWithError(`failed to parse token account resp, RPC_ERROR, ${error}`);
+      continue;
+    }
   }
 
   if (solAccountResp) {
