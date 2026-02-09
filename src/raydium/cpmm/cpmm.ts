@@ -1513,7 +1513,7 @@ export default class CpmmModule extends ModuleBase {
     const _inputAmountWithoutFee = inputAmount.sub(inputAmountFee.fee ?? new BN(0));
 
     const lpAmount = new BN(
-      new Decimal(poolInfo.lpAmount).mul(10 ** poolInfo.lpMint.decimals).toFixed(0, Decimal.ROUND_DOWN),
+      new Decimal(poolInfo.lpAmount).toFixed(0, Decimal.ROUND_DOWN),
     );
     this.logDebug("baseReserve:", baseReserve.toString(), "quoteReserve:", quoteReserve.toString());
 
