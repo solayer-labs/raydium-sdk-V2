@@ -1,6 +1,6 @@
 {
   "name": "@solayer-labs/cpmm-sdk",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "CPMM SDK for Solayer - Build liquidity pools and swap applications on Solayer chain.",
   "license": "GPL-3.0",
   "main": "./lib/index.js",

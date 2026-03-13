@@ -141,7 +141,7 @@ const { txId } = await execute({ sendAndConfirm: true });
 ### RPC Endpoints
 
 - **Devnet**: `https://devnet-rpc.solayer.org`
-- **Mainnet**: `https://rpc.solayer.org` (or your mainnet RPC)
+- **Mainnet**: `https://mainnet-rpc.solayer.org` (or your mainnet RPC)
 
 ### Cluster Names
 
